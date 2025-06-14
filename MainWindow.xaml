@@ -7,6 +7,26 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <TextBox x:Name="FolderPathTextBox"
+                 Grid.Column="0"
+                 Grid.Row="0"
+                 VerticalAlignment="Top"
+                 Margin="2,97,2,0"
+                 IsReadOnly="True"
+                 />
+        <Button x:Name="BrowseFolderButton"
+                Grid.Column="1"
+                Grid.Row="0"
+                Content="Browse..."
+                VerticalAlignment="Center"
+                Click="BrowseFolderButton_Click"/>
+        <ListBox x:Name="FolderContentsListBox"
+                 Grid.Column="0"
+                 Height="200"
+                 Margin="8,224,12,10"/>
     </Grid>
 </Window>
