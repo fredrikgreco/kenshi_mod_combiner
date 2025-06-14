@@ -68,6 +68,7 @@
             HorizontalAlignment="Right"
             Margin="0,10,0,0"
             Click="CopyModsButton_Click" />
+        
     </Grid>
 
 </Window>

@@ -43,5 +43,25 @@ namespace kenshi_mod_combiner
 				}
 			}
 		}
+
+		private void BrowseFolderButton2_Click(object sender, RoutedEventArgs e)
+		{
+			using (var dialog = new Forms.FolderBrowserDialog())
+			{
+				dialog.Description = "Select a folder";
+				dialog.ShowNewFolderButton = true;
+				if (dialog.ShowDialog() == Forms.DialogResult.OK)
+				{
+					FolderPathTextBox2.Text = dialog.SelectedPath;
+					FolderContentsListBox2.ItemsSource = Directory.GetFileSystemEntries(dialog.SelectedPath);
+
+				}
+			}
+		}
+
+		private void CopyModsButton_Click(object sender, RoutedEventArgs e)
+		{
+
+		}
 	}
 }
