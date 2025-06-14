@@ -21,6 +21,12 @@ using Path = System.IO.Path;
 
 namespace kenshi_mod_combiner
 {
+	public class ModItem
+	{
+		public string DisplayName { get; set; }
+		public string FolderName { get; set; }
+		public bool IsChecked { get; set; }
+	}
 	public partial class MainWindow : Window
 	{
 		private const string LastKenshiPathFile = "last_kenshi_path.txt";
@@ -152,45 +158,118 @@ namespace kenshi_mod_combiner
 			if (!IsValidFolderPath(folderPath))
 				return;
 
-			// Get all mod names on the left for quick lookup
 			var existingMods = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 			if (FolderContentsListBox.ItemsSource is IEnumerable<string> existing)
 			{
 				foreach (var item in existing)
-				{
 					existingMods.Add(item);
-				}
 			}
 
-			var steamMods = new List<string>();
+			var steamMods = new List<ModItem>();
 
 			foreach (var dir in Directory.GetDirectories(folderPath))
 			{
 				var modFiles = Directory.GetFiles(dir, "*.mod", SearchOption.TopDirectoryOnly);
-				if (modFiles.Length == 0)
-					continue;
+				if (modFiles.Length == 0) continue;
 
 				string modName = Path.GetFileNameWithoutExtension(modFiles[0]);
+				string label = modName;
 
 				if (existingMods.Contains(modName))
-					modName += " [exists in mods already]";
+					label += " [exists in mods already]";
 
-				steamMods.Add($"{modName}  ({Path.GetFileName(dir)})");
+				steamMods.Add(new ModItem
+				{
+					DisplayName = $"{label}  ({Path.GetFileName(dir)})",
+					FolderName = Path.GetFileName(dir),
+					IsChecked = false
+				});
 			}
 
-			steamMods.Sort((a, b) =>
-			{
-				string aName = a.Split(' ')[0];
-				string bName = b.Split(' ')[0];
-				return string.Compare(aName, bName, StringComparison.OrdinalIgnoreCase);
-			});
-
+			steamMods.Sort((a, b) => string.Compare(a.DisplayName, b.DisplayName, StringComparison.OrdinalIgnoreCase));
 			FolderContentsListBox2.ItemsSource = steamMods;
 		}
 
+
 		private void CopyModsButton_Click(object sender, RoutedEventArgs e)
 		{
-			// TODO: Implement copying logic
+			string steamFolder = FolderPathTextBox2.Text;
+			string kenshiFolder = FolderPathTextBox.Text;
+
+			if (!Directory.Exists(steamFolder) || !Directory.Exists(kenshiFolder))
+			{
+				System.Windows.MessageBox.Show("Both mod folders must be selected first.");
+				return;
+			}
+
+			// Extract mod items
+			var modItems = FolderContentsListBox2.Items.OfType<ModItem>().Where(m => m.IsChecked).ToList();
+			if (modItems.Count == 0)
+			{
+				System.Windows.MessageBox.Show("Inga mods valda! Skärp dig! 😠");
+				return;
+			}
+
+			foreach (var modItem in modItems)
+			{
+				string workshopFolder = Path.Combine(steamFolder, modItem.FolderName);
+
+				if (Directory.Exists(workshopFolder))
+				{
+					CopyDirectorySmart(workshopFolder, kenshiFolder);
+				}
+			}
+
+			// Refresh views
+			UpdateKenshiModList(kenshiFolder);
+			UpdateSteamModList(steamFolder);
+
+			System.Windows.MessageBox.Show("Mods copied!");
 		}
+
+
+		// Recursively copy directory from source to dest (overwrite files)
+		private void CopyDirectory(string sourceDir, string destinationDir)
+		{
+			Directory.CreateDirectory(destinationDir);
+
+			foreach (var file in Directory.GetFiles(sourceDir))
+			{
+				string destFile = Path.Combine(destinationDir, Path.GetFileName(file));
+				File.Copy(file, destFile, true);
+			}
+
+			foreach (var dir in Directory.GetDirectories(sourceDir))
+			{
+				string destSubDir = Path.Combine(destinationDir, Path.GetFileName(dir));
+				CopyDirectory(dir, destSubDir);
+			}
+		}
+
+		private void CopyDirectorySmart(string sourceDir, string destinationBase)
+		{
+			var modFiles = Directory.GetFiles(sourceDir, "*.mod", SearchOption.TopDirectoryOnly);
+			if (modFiles.Length == 0)
+				return;
+
+			string modFileName = Path.GetFileNameWithoutExtension(modFiles[0]);
+			string destinationDir = Path.Combine(destinationBase, modFileName);
+
+			// If destination exists, move to backup folder
+			if (Directory.Exists(destinationDir))
+			{
+				string backupDir = Path.Combine(destinationBase, "_overwritten", $"{modFileName}_{DateTime.Now:yyyyMMdd_HHmmss}");
+				Directory.CreateDirectory(Path.GetDirectoryName(backupDir));
+				Directory.Move(destinationDir, backupDir);
+
+				// Log what was replaced
+				string logPath = Path.Combine(backupDir, "mod_backup_log.txt");
+				File.WriteAllText(logPath, $"[{DateTime.Now}] Overwrote mod: {modFileName}\nOriginal backed up from: {destinationDir}\n");
+			}
+
+			// Copy the new mod folder into renamed destination
+			CopyDirectory(sourceDir, destinationDir);
+		}
+
 	}
 }
