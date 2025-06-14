@@ -6,27 +6,68 @@
         xmlns:local="clr-namespace:kenshi_mod_combiner"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
+    <Grid Margin="10">
+        <!-- Columns: Mod Folder | Button | Spacer | Steam Folder | Button -->
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="2*" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="30" />
+            <!-- Spacer -->
+            <ColumnDefinition Width="2*" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
+
+        <!-- Rows: Path Selectors | Folder Contents | Buttons (optional) -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Folder Path selectors -->
+            <RowDefinition Height="*"/>
+            <!-- ListBoxes for contents -->
+            <RowDefinition Height="Auto"/>
+            <!-- Copy button row -->
+        </Grid.RowDefinitions>
+
+        <!-- Kenshi Mod Folder Path -->
         <TextBox x:Name="FolderPathTextBox"
-                 Grid.Column="0"
-                 Grid.Row="0"
-                 VerticalAlignment="Top"
-                 Margin="2,97,2,0"
-                 IsReadOnly="True"
-                 />
+             Grid.Row="0" Grid.Column="0"
+             IsReadOnly="True"
+             Margin="0,0,5,5" />
+
         <Button x:Name="BrowseFolderButton"
-                Grid.Column="1"
-                Grid.Row="0"
-                Content="Browse..."
-                VerticalAlignment="Center"
-                Click="BrowseFolderButton_Click"/>
+            Grid.Row="0" Grid.Column="1"
+            Content="Browse..."
+            Margin="0,0,0,5"
+            Click="BrowseFolderButton_Click" />
+
+        <!-- Steam Mod Folder Path -->
+        <TextBox x:Name="FolderPathTextBox2"
+             Grid.Row="0" Grid.Column="3"
+             IsReadOnly="True"
+             Margin="0,0,5,5" />
+
+        <Button x:Name="BrowseFolderButton2"
+            Grid.Row="0" Grid.Column="4"
+            Content="Browse..."
+            Margin="0,0,0,5"
+            Click="BrowseFolderButton2_Click" />
+
+        <!-- ListBoxes -->
         <ListBox x:Name="FolderContentsListBox"
-                 Grid.Column="0"
-                 Height="200"
-                 Margin="8,224,12,10"/>
+             Grid.Row="1" Grid.Column="0"
+             Grid.ColumnSpan="2"
+             Margin="0,0,5,5" />
+
+        <ListBox x:Name="FolderContentsListBox2"
+             Grid.Row="1" Grid.Column="3"
+             Grid.ColumnSpan="2"
+             Margin="0,0,0,5" />
+
+        <!-- Copy Button -->
+        <Button Content="Copy Selected Mods"
+            Grid.Row="2" Grid.Column="4"
+            HorizontalAlignment="Right"
+            Margin="0,10,0,0"
+            Click="CopyModsButton_Click" />
     </Grid>
+
 </Window>
